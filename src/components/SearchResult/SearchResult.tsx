@@ -1,10 +1,14 @@
+import { ApiSearchResponse } from '@/services/api'
 import { FileData } from '@/types/data.types'
 import { Accordion, AccordionItem, Checkbox, Divider } from '@nextui-org/react'
+import { UseQueryResult } from '@tanstack/react-query'
 import clsx from 'clsx'
 import React, { useMemo } from 'react'
 import { ContextPanel } from '../ContextPanel/ContextPanel'
 import { FileCard } from '../FileCard'
 import { FolderCard } from '../FolderCard'
+import ErrorComponent from '../QueryWrapper/ErrorComponent'
+import QueryWrapper from '../QueryWrapper/QueryWrapper'
 import {
   AudioFileIcon,
   DraftIcon,
@@ -13,6 +17,7 @@ import {
   PdfFileIcon,
   VideoFileIcon,
 } from '../icons'
+import { SearchResultLoadingFiles } from './SearchResult.loading'
 
 const iconMap = {
   folder: FolderIcon,
@@ -29,6 +34,7 @@ export type SearchResultProps = Omit<
 > & {
   title?: React.ReactNode
   description?: React.ReactNode
+  searchQuery: UseQueryResult<ApiSearchResponse, unknown>
 
   files?: FileData[]
   selected?: string[]
@@ -47,6 +53,7 @@ export const SearchResult: React.FC<SearchResultProps> = ({
   className,
   hideList = false,
   compactOverview = false,
+  searchQuery,
   ...props
 }) => {
   const map: Record<string, FileData> = useMemo(
@@ -118,92 +125,107 @@ export const SearchResult: React.FC<SearchResultProps> = ({
         </div>
       </div>
       <div className="mt-8">
-        <Accordion
-          isCompact
-          hideIndicator
-          keepContentMounted
-          selectedKeys={!hideList ? ['root-tree'] : []}
+        <QueryWrapper
+          isError={searchQuery.isError}
+          isLoading={searchQuery.isLoading}
+          LoadingCommponent={<SearchResultLoadingFiles />}
+          ErrorComponent={
+            <ErrorComponent
+              errorMessage="Failed to fetch data"
+              isLoading={searchQuery.isLoading}
+              onRetry={() => {
+                searchQuery.refetch()
+              }}
+            />
+          }
         >
-          <AccordionItem
-            title={null}
-            key="root-tree"
-            HeadingComponent={() => <></>}
+          <Accordion
+            isCompact
+            hideIndicator
+            keepContentMounted
+            selectedKeys={!hideList ? ['root-tree'] : []}
           >
-            <div className={clsx('max-h-[500px] overflow-y-auto')}>
-              {directoriesGroup.map((item, index) => (
-                <div key={index}>
-                  <div className={clsx('flex flex-row items-center')}>
-                    <FolderCard
-                      name={item.name}
-                      label={[
-                        'Folder',
-                        `${(item.children || []).length} items`,
-                      ]}
-                      selectedKeys={[]}
-                      itemProps={{
-                        onPress: () => onCheckboxChange(item.id),
-                        startContent: (
-                          <>
-                            <Checkbox
-                              className="pe-[16px]"
-                              isSelected={isItemSelected(item.id)}
-                              onValueChange={() => onCheckboxChange(item.id)}
-                            />
-                          </>
-                        ),
-                        hideIndicator: true,
-                      }}
-                    />
+            <AccordionItem
+              title={null}
+              key="root-tree"
+              HeadingComponent={() => <></>}
+            >
+              <div className={clsx('max-h-[500px] overflow-y-auto')}>
+                {directoriesGroup.map((item, index) => (
+                  <div key={index}>
+                    <div className={clsx('flex flex-row items-center')}>
+                      <FolderCard
+                        name={item.name}
+                        label={[
+                          'Folder',
+                          `${(item.children || []).length} items`,
+                        ]}
+                        selectedKeys={[]}
+                        itemProps={{
+                          onPress: () => onCheckboxChange(item.id),
+                          startContent: (
+                            <>
+                              <Checkbox
+                                className="pe-[16px]"
+                                isSelected={isItemSelected(item.id)}
+                                onValueChange={() => onCheckboxChange(item.id)}
+                              />
+                            </>
+                          ),
+                          hideIndicator: true,
+                        }}
+                      />
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
 
-              <Divider className="my-2" />
+                <Divider className="my-2" />
 
-              <Accordion
-                isCompact
-                variant="light"
-                showDivider={false}
-                keepContentMounted
-              >
-                {filesGroup.map((item, index) => {
-                  const IconComponent = iconMap[item.type]
+                <Accordion
+                  isCompact
+                  variant="light"
+                  showDivider={false}
+                  keepContentMounted
+                >
+                  {filesGroup.map((item, index) => {
+                    const IconComponent = iconMap[item.type]
 
-                  return (
-                    <AccordionItem
-                      key={index}
-                      title={
-                        <div className={clsx('flex flex-row items-center')}>
-                          <FileCard
-                            name={item.name}
-                            tags={item.tags}
-                            excerpt={item.excerpt}
-                            itemProps={{
-                              onPress: () => onCheckboxChange(item.id),
-                              startContent: (
-                                <>
-                                  <Checkbox
-                                    className="pe-[16px]"
-                                    isSelected={isItemSelected(item.id)}
-                                    onValueChange={() =>
-                                      onCheckboxChange(item.id)
-                                    }
-                                  />
-                                </>
-                              ),
-                            }}
-                            icon={<IconComponent />}
-                            extension={item.extension || ''}
-                          />
-                        </div>
-                      }
-                    ></AccordionItem>
-                  )
-                })}
-              </Accordion>
-            </div>
-          </AccordionItem>
-        </Accordion>
+                    return (
+                      <AccordionItem
+                        key={index}
+                        title={
+                          <div className={clsx('flex flex-row items-center')}>
+                            <FileCard
+                              name={item.name}
+                              tags={item.tags}
+                              excerpt={item.excerpt}
+                              itemProps={{
+                                onPress: () => onCheckboxChange(item.id),
+                                startContent: (
+                                  <>
+                                    <Checkbox
+                                      className="pe-[16px]"
+                                      isSelected={isItemSelected(item.id)}
+                                      onValueChange={() =>
+                                        onCheckboxChange(item.id)
+                                      }
+                                    />
+                                  </>
+                                ),
+                              }}
+                              icon={<IconComponent />}
+                              extension={item.extension || ''}
+                            />
+                          </div>
+                        }
+                      ></AccordionItem>
+                    )
+                  })}
+                </Accordion>
+              </div>
+            </AccordionItem>
+          </Accordion>
+        </QueryWrapper>
       </div>
     </div>
   )

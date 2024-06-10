@@ -23,7 +23,7 @@ export const HomePage: React.FC<HomePageProps> = ({ className, ...props }) => {
   const queryParm = useQueryParams()
   const filter = queryParm.getArray(QUERY_PARAMS_KEY.FILE_TYPE) as FILE_TYPE[]
 
-  const search = useSearch(
+  const searchQuery = useSearch(
     { query },
     {
       cacheTime: 0,
@@ -37,12 +37,12 @@ export const HomePage: React.FC<HomePageProps> = ({ className, ...props }) => {
   )
 
   const fileList = useMemo(
-    () => filterByType(populateDirs(search.data?.files || []), filter),
-    [search.data, filter],
+    () => filterByType(populateDirs(searchQuery.data?.files || []), filter),
+    [searchQuery.data, filter],
   )
 
   const onSearch = () => {
-    search.refetch()
+    searchQuery.refetch()
   }
 
   const onPrompt = async (prompt: string) => {
@@ -69,9 +69,9 @@ export const HomePage: React.FC<HomePageProps> = ({ className, ...props }) => {
 
   useEffect(() => {
     setSelectedFiles([])
-  }, [search.data])
+  }, [searchQuery.data])
 
-  if (search.isLoading) return <>Loading ...</>
+  // if (search.isLoading) return <>Loading ...</>
 
   return (
     <ChatLayout
@@ -88,7 +88,7 @@ export const HomePage: React.FC<HomePageProps> = ({ className, ...props }) => {
     >
       <Search
         compact={messages.length > 0}
-        searching={search.isFetching}
+        searchQuery={searchQuery}
         query={query}
         onQueryChange={(v) => setQuery(v)}
         onSearch={onSearch}
@@ -96,6 +96,7 @@ export const HomePage: React.FC<HomePageProps> = ({ className, ...props }) => {
         onSelect={(selected) => setSelectedFiles(selected)}
         selectedFiles={selectedFiles}
       />
+
       <ChatMessages
         className="py-[20px]"
         data={messages.map((msg) => ({

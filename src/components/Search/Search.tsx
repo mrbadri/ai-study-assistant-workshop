@@ -1,5 +1,7 @@
 import { AnimatedText } from '@/components/AnimatedText'
 import { SearchBar } from '@/components/SearchBar'
+import { ApiSearchResponse } from '@/services/api'
+import { UseQueryResult } from '@tanstack/react-query'
 import clsx from 'clsx'
 import React from 'react'
 import SearchFilter from '../SearchFilter/SearchFilter'
@@ -8,14 +10,12 @@ import { SearchResult, SearchResultProps } from '../SearchResult'
 export type SearchProps = {
   query?: string
   onQueryChange?: (query: string) => void
-
+  searchQuery: UseQueryResult<ApiSearchResponse, unknown>
   searching?: boolean
   results?: SearchResultProps['files']
   onSearch?: (query: string) => void
-
   selectedFiles?: SearchResultProps['selected']
   onSelect?: SearchResultProps['onSelect']
-
   compact?: boolean
 }
 
@@ -28,6 +28,7 @@ export const Search: React.FC<SearchProps> = ({
   selectedFiles,
   onSelect,
   compact,
+  searchQuery,
 }) => {
   const compactClass = compact && ['opacity-0', 'invisible', 'h-0', 'mb-0']
 
@@ -46,6 +47,7 @@ export const Search: React.FC<SearchProps> = ({
       <div>
         {typeof results !== 'undefined' && (
           <SearchResult
+            searchQuery={searchQuery}
             title={
               <div className="flex flex-row items-center gap-2">
                 <AnimatedText
