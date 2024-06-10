@@ -160,35 +160,47 @@ export const SearchResult: React.FC<SearchResultProps> = ({
 
               <Divider className="my-2" />
 
-              {filesGroup.map((item, index) => {
-                const IconComponent = iconMap[item.type]
+              <Accordion
+                isCompact
+                variant="light"
+                showDivider={false}
+                keepContentMounted
+              >
+                {filesGroup.map((item, index) => {
+                  const IconComponent = iconMap[item.type]
 
-                return (
-                  <div key={index}>
-                    <div className={clsx('flex flex-row items-center')}>
-                      <FileCard
-                        name={item.name}
-                        tags={item.tags}
-                        excerpt={item.excerpt}
-                        itemProps={{
-                          onPress: () => onCheckboxChange(item.id),
-                          startContent: (
-                            <>
-                              <Checkbox
-                                className="pe-[16px]"
-                                isSelected={isItemSelected(item.id)}
-                                onValueChange={() => onCheckboxChange(item.id)}
-                              />
-                            </>
-                          ),
-                        }}
-                        icon={<IconComponent />}
-                        extension={item.extension || ''}
-                      />
-                    </div>
-                  </div>
-                )
-              })}
+                  return (
+                    <AccordionItem
+                      key={index}
+                      title={
+                        <div className={clsx('flex flex-row items-center')}>
+                          <FileCard
+                            name={item.name}
+                            tags={item.tags}
+                            excerpt={item.excerpt}
+                            itemProps={{
+                              onPress: () => onCheckboxChange(item.id),
+                              startContent: (
+                                <>
+                                  <Checkbox
+                                    className="pe-[16px]"
+                                    isSelected={isItemSelected(item.id)}
+                                    onValueChange={() =>
+                                      onCheckboxChange(item.id)
+                                    }
+                                  />
+                                </>
+                              ),
+                            }}
+                            icon={<IconComponent />}
+                            extension={item.extension || ''}
+                          />
+                        </div>
+                      }
+                    ></AccordionItem>
+                  )
+                })}
+              </Accordion>
             </div>
           </AccordionItem>
         </Accordion>

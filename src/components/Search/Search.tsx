@@ -2,6 +2,7 @@ import { AnimatedText } from '@/components/AnimatedText'
 import { SearchBar } from '@/components/SearchBar'
 import clsx from 'clsx'
 import React from 'react'
+import SearchFilter from '../SearchFilter/SearchFilter'
 import { SearchResult, SearchResultProps } from '../SearchResult'
 
 export type SearchProps = {
@@ -28,14 +29,12 @@ export const Search: React.FC<SearchProps> = ({
   onSelect,
   compact,
 }) => {
+  const compactClass = compact && ['opacity-0', 'invisible', 'h-0', 'mb-0']
+
   return (
     <div className="flex flex-col">
       <SearchBar
-        className={clsx(
-          'transition',
-          'mb-10',
-          compact && ['opacity-0', 'invisible', 'h-0', 'mb-0'],
-        )}
+        className={clsx('transition', 'mb-5', compactClass)}
         value={query}
         pending={searching}
         onChange={(e) => onQueryChange && onQueryChange(e.target.value)}
@@ -43,6 +42,7 @@ export const Search: React.FC<SearchProps> = ({
           onSearch && onSearch(query || '')
         }}
       />
+      <SearchFilter className={clsx('transition', 'mb-8', compactClass)} />
       <div>
         {typeof results !== 'undefined' && (
           <SearchResult

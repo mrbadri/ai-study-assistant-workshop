@@ -1,9 +1,13 @@
 import { ChatMessages } from '@/components/ChatMessages'
 import { MessageBar } from '@/components/MessageBar'
 import { Search } from '@/components/Search'
+import { QUERY_PARAMS_KEY } from '@/constant/queryParams.constant'
+import useQueryParams from '@/hook/queryParameter/queryParameter.hook'
 import { ChatLayout } from '@/layouts/ChatLayout/Chat.layout'
 import { useSearch } from '@/queries/useSearch'
 import { ApiChatMessage, chatApi } from '@/services/api'
+import { FILE_TYPE } from '@/types/data.types'
+import { filterByType } from '@/utils/filterType.utills'
 import { populateDirs } from '@/utils/populateDirs.util'
 import React, { useEffect, useMemo, useState } from 'react'
 
@@ -16,22 +20,28 @@ export const HomePage: React.FC<HomePageProps> = ({ className, ...props }) => {
   const [messages, setMessages] = useState<ApiChatMessage[]>([])
   const [generating, setGenerating] = useState(false)
 
+  const queryParm = useQueryParams()
+  const filter = queryParm.getArray(QUERY_PARAMS_KEY.FILE_TYPE) as FILE_TYPE[]
+
   const search = useSearch(
     { query },
     {
       cacheTime: 0,
-      enabled: false,
+      enabled: queryParm.router.isReady,
       keepPreviousData: true,
       refetchOnWindowFocus: false,
+      onError(err) {
+        console.log('err', err)
+      },
     },
   )
 
   const fileList = useMemo(
-    () => populateDirs(search.data?.files || []),
-    [search.data],
+    () => filterByType(populateDirs(search.data?.files || []), filter),
+    [search.data, filter],
   )
 
-  const onSearch = async () => {
+  const onSearch = () => {
     search.refetch()
   }
 
@@ -61,9 +71,7 @@ export const HomePage: React.FC<HomePageProps> = ({ className, ...props }) => {
     setSelectedFiles([])
   }, [search.data])
 
-  useEffect(() => {
-    onSearch()
-  }, [])
+  if (search.isLoading) return <>Loading ...</>
 
   return (
     <ChatLayout

@@ -1,15 +1,16 @@
-export type FileType =
-  | 'folder'
-  | 'image'
-  | 'video'
-  | 'audio'
-  | 'document'
-  | 'pdf'
+export enum FILE_TYPE {
+  FOLDER = 'folder',
+  IMAGE = 'image',
+  VIDEO = 'video',
+  AUDIO = 'audio',
+  DOCUMENT = 'document',
+  PDF = 'pdf',
+}
 
 export type FileData = {
   id: string
   name: string
-  type: FileType
+  type: FILE_TYPE
   excerpt?: string
   tags?: string[]
   path: string[]

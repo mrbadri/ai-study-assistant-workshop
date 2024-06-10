@@ -1,4 +1,4 @@
-import { FileData } from '@/types/data.types'
+import { FILE_TYPE, FileData } from '@/types/data.types'
 import { settle } from '@/utils/async.utils'
 import { groupBy } from '@/utils/groupBy.util'
 import type { GetQueryBuilder } from '@unbody-io/ts-client/build/core/query-builder/GetQueryBuilder'
@@ -247,9 +247,39 @@ const parseUserPrompt = async (params: {
   }>(prompt, { json: true })
 }
 
+const getFileType = (__typename: string, ext: string) => {
+  let type
+
+  switch (__typename) {
+    case 'GoogleDoc':
+      type = FILE_TYPE.DOCUMENT
+      break
+
+    case 'TextDocument':
+      type = FILE_TYPE.DOCUMENT
+      if (ext === 'pdf') type = FILE_TYPE.PDF
+      break
+
+    case 'VideoFile':
+      type = FILE_TYPE.VIDEO
+      break
+
+    case 'ImageBlock':
+      type = FILE_TYPE.IMAGE
+      break
+
+    default:
+      type = FILE_TYPE.DOCUMENT
+      break
+  }
+
+  return type
+}
+
 export const apiUtils = {
   generate,
   extractJson,
+  getFileType,
   multimodalChat,
   parseUserPrompt,
   generateFromFiles,
