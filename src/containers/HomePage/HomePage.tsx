@@ -1,29 +1,74 @@
-import { ChatMessages } from '@/components/ChatMessages'
-import { MessageBar } from '@/components/MessageBar'
-import { Search } from '@/components/Search'
 import { QUERY_PARAMS_KEY } from '@/constant/queryParams.constant'
+import useLocalStorage from '@/hook/localStorage.hook'
+import { useMode } from '@/hook/mode.hooks'
 import useQueryParams from '@/hook/queryParamets.hook'
 import { ChatLayout } from '@/layouts/ChatLayout/Chat.layout'
 import useChat from '@/queries/useChat'
 import { useSearch } from '@/queries/useSearch'
 import { ApiChatMessage } from '@/services/api'
-import { FILE_TYPE } from '@/types/data.types'
+import { FILE_TYPE, MODE } from '@/types/data.types'
 import { filterByType } from '@/utils/filterType.utills'
 import { populateDirs } from '@/utils/populateDirs.util'
-import React, { useEffect, useMemo, useState } from 'react'
+import dynamic from 'next/dynamic'
+import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react'
 
-export type HomePageProps = React.HTMLProps<HTMLDivElement>
+const Search = dynamic(
+  () => {
+    return import('@/components/Search/Search').then((mod) => mod.Search)
+  },
+  {
+    ssr: false,
+  },
+)
+
+const MessageBar = dynamic(
+  () => {
+    return import('@/components/MessageBar').then((mod) => mod.MessageBar)
+  },
+  {
+    ssr: false,
+  },
+)
+
+const ChatMessages = dynamic(
+  () => {
+    return import('@/components/ChatMessages/ChatMessages').then(
+      (mod) => mod.ChatMessages,
+    )
+  },
+  {
+    ssr: false,
+  },
+)
+
+export type HomePageProps = React.HTMLProps<HTMLDivElement> & {
+  mode: MODE | undefined
+}
 
 export type OnEditPrompt = (
   prompt: string,
   messageIndex: number,
 ) => Promise<void>
 
-export const HomePage: React.FC<HomePageProps> = ({ className, ...props }) => {
+export const HomePage: React.FC<HomePageProps> = ({
+  className,
+  mode: intialMode,
+  ...props
+}) => {
   const [query, setQuery] = useState('')
   const [prompt, setPrompt] = useState('')
-  const [selectedFiles, setSelectedFiles] = useState<string[]>([])
-  const [messages, setMessages] = useState<ApiChatMessage[]>([])
+  const [selectedFiles, setSelectedFiles] = useLocalStorage<string[]>(
+    'selectedFiles',
+    [],
+  )
+  const [messages, setMessages] = useLocalStorage<ApiChatMessage[]>(
+    'messages',
+    [],
+  )
+
+  const { mode } = useMode(intialMode)
+
+  const isChatMode = mode === MODE.CHAT
 
   const queryParm = useQueryParams()
   const filter = queryParm.getArray(QUERY_PARAMS_KEY.FILE_TYPE) as FILE_TYPE[]
@@ -87,8 +132,13 @@ export const HomePage: React.FC<HomePageProps> = ({ className, ...props }) => {
     })
   }
 
+  useLayoutEffect(() => {
+    if (isChatMode && selectedFiles.length === 0)
+      queryParm.remove(QUERY_PARAMS_KEY.MODE)
+  }, [selectedFiles.length, isChatMode])
+
   useEffect(() => {
-    setSelectedFiles([])
+    if (!isChatMode && queryParm.router.isReady) setSelectedFiles([])
   }, [searchQuery.data])
 
   return (
@@ -105,7 +155,7 @@ export const HomePage: React.FC<HomePageProps> = ({ className, ...props }) => {
       }
     >
       <Search
-        compact={messages.length > 0}
+        compact={isChatMode}
         searchQuery={searchQuery}
         query={query}
         onQueryChange={(v) => setQuery(v)}
@@ -114,15 +164,16 @@ export const HomePage: React.FC<HomePageProps> = ({ className, ...props }) => {
         onSelect={(selected) => setSelectedFiles(selected)}
         selectedFiles={selectedFiles}
       />
-
-      <ChatMessages
-        onEditPrompt={onEditPrompt}
-        className="py-[20px]"
-        data={messages.map((msg) => ({
-          role: msg.role,
-          message: msg.message,
-        }))}
-      />
+      {isChatMode && (
+        <ChatMessages
+          onEditPrompt={onEditPrompt}
+          className="py-[20px]"
+          data={messages.map((msg) => ({
+            role: msg.role,
+            message: msg.message,
+          }))}
+        />
+      )}
     </ChatLayout>
   )
 }

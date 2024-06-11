@@ -127,7 +127,7 @@ export const SearchResult: React.FC<SearchResultProps> = ({
       <div className="mt-8">
         <QueryWrapper
           isError={searchQuery.isError}
-          isLoading={searchQuery.isLoading}
+          isLoading={searchQuery.isLoading && !hideList}
           LoadingCommponent={<SearchResultLoadingFiles />}
           ErrorComponent={
             <ErrorComponent
@@ -150,7 +150,9 @@ export const SearchResult: React.FC<SearchResultProps> = ({
               key="root-tree"
               HeadingComponent={() => <></>}
             >
-              <div className={clsx('max-h-[500px] overflow-y-auto')}>
+              <div
+                className={clsx('max-h-[calc(100vh-355px)] overflow-y-auto')}
+              >
                 {directoriesGroup.map((item, index) => (
                   <div key={index}>
                     <div className={clsx('flex flex-row items-center')}>

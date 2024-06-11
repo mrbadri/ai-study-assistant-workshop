@@ -23,3 +23,8 @@ export type FileData = {
     __typename: string
   }
 }
+
+export enum MODE {
+  CHAT = 'chat',
+  EXPLORE = 'explore',
+}
