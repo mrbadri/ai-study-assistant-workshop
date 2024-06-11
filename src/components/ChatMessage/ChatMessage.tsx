@@ -1,44 +1,40 @@
-import { Avatar } from '@nextui-org/react'
-import clsx from 'clsx'
+import { OnEditPrompt } from '@/containers/HomePage'
 import React from 'react'
-import { useAnimatedText } from '../AnimatedText'
+import { ChatMessageAssistant } from '../ChatMessageAssistant'
+import { ChatMessageUser } from '../ChatMessageUser'
 
 export type ChatMessageProps = Omit<React.HTMLProps<HTMLDivElement>, 'role'> & {
   message: string
   role: 'user' | 'assistant'
+  index: number
   disableAnimation?: boolean
+  onEditPrompt: OnEditPrompt
 }
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({
   message,
   role,
   disableAnimation = false,
+  onEditPrompt,
+  index,
   ...props
 }) => {
-  const content = useAnimatedText(message, {
-    maxTime: 1000,
-    disabled: role === 'user' || disableAnimation,
-  })
+  if (role === 'user')
+    return (
+      <ChatMessageUser
+        onEditPrompt={onEditPrompt}
+        index={index}
+        message={message}
+        {...props}
+      />
+    )
 
   return (
-    <div {...props} className={clsx('', props.className)}>
-      <div className="flex flex-row gap-4 items-start">
-        <Avatar
-          className="flex-shrink-0"
-          showFallback
-          color={role === 'assistant' ? 'primary' : 'default'}
-          name={role === 'assistant' ? 'A' : ''}
-          classNames={{
-            name: 'text-[16px]',
-          }}
-        />
-        <div className="flex-grow border border-gray-200 rounded-lg p-4 text-md bg-white shadow-sm mt-[-4px]">
-          <div
-            className="whitespace-pre-wrap break-words"
-            dangerouslySetInnerHTML={{ __html: content }}
-          />
-        </div>
-      </div>
-    </div>
+    <ChatMessageAssistant
+      message={message}
+      disableAnimation={disableAnimation}
+      role={role}
+      {...props}
+    />
   )
 }

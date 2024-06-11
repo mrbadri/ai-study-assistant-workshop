@@ -13,6 +13,11 @@ import React, { useEffect, useMemo, useState } from 'react'
 
 export type HomePageProps = React.HTMLProps<HTMLDivElement>
 
+export type OnEditPrompt = (
+  prompt: string,
+  messageIndex: number,
+) => Promise<void>
+
 export const HomePage: React.FC<HomePageProps> = ({ className, ...props }) => {
   const [query, setQuery] = useState('')
   const [prompt, setPrompt] = useState('')
@@ -30,9 +35,6 @@ export const HomePage: React.FC<HomePageProps> = ({ className, ...props }) => {
       enabled: queryParm.router.isReady,
       keepPreviousData: true,
       refetchOnWindowFocus: false,
-      onError(err) {
-        console.log('err', err)
-      },
     },
   )
 
@@ -67,11 +69,36 @@ export const HomePage: React.FC<HomePageProps> = ({ className, ...props }) => {
     setPrompt('')
   }
 
+  const onEditPrompt: OnEditPrompt = async (prompt, messageIndex) => {
+    setGenerating(true)
+
+    setMessages((value) => {
+      const updatedMessages = value.slice(0, messageIndex)
+      updatedMessages.push({
+        role: 'user',
+        message: prompt,
+      })
+      return updatedMessages
+    })
+
+    const { message } = await chatApi({
+      prompt,
+      files: fileList.filter((f) => selectedFiles.includes(f.id)),
+      history: messages,
+    })
+
+    setGenerating(false)
+    setMessages((value) => {
+      const updatedMessages = value.slice(0, messageIndex + 1)
+      updatedMessages.push(message)
+      return updatedMessages
+    })
+    setPrompt('')
+  }
+
   useEffect(() => {
     setSelectedFiles([])
   }, [searchQuery.data])
-
-  // if (search.isLoading) return <>Loading ...</>
 
   return (
     <ChatLayout
@@ -98,6 +125,7 @@ export const HomePage: React.FC<HomePageProps> = ({ className, ...props }) => {
       />
 
       <ChatMessages
+        onEditPrompt={onEditPrompt}
         className="py-[20px]"
         data={messages.map((msg) => ({
           role: msg.role,

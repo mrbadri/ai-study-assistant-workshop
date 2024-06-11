@@ -1,3 +1,4 @@
+import { OnEditPrompt } from '@/containers/HomePage'
 import clsx from 'clsx'
 import React, { useEffect, useRef } from 'react'
 import { ChatMessage, ChatMessageProps } from '../ChatMessage'
@@ -7,10 +8,12 @@ export type ChatMessagesProps = Omit<
   'data'
 > & {
   data?: Pick<ChatMessageProps, 'message' | 'role' | 'disableAnimation'>[]
+  onEditPrompt: OnEditPrompt
 }
 
 export const ChatMessages: React.FC<ChatMessagesProps> = ({
   data = [],
+  onEditPrompt,
   ...props
 }) => {
   const ref = useRef<HTMLDivElement>(null)
@@ -36,13 +39,15 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
       {...props}
       ref={ref}
       className={clsx(
-        'flex flex-col gap-8 w-full overflow-x-hidden',
+        'flex flex-col gap-6 w-full overflow-x-hidden',
         props.className,
       )}
     >
       {data.map((message, index) => (
         <ChatMessage
+          onEditPrompt={onEditPrompt}
           key={index}
+          index={index}
           role={message.role}
           message={message.message}
           disableAnimation={message.disableAnimation || index < data.length - 1}
