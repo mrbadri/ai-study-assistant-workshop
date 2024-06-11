@@ -4,8 +4,9 @@ import { Search } from '@/components/Search'
 import { QUERY_PARAMS_KEY } from '@/constant/queryParams.constant'
 import useQueryParams from '@/hook/queryParameter/queryParameter.hook'
 import { ChatLayout } from '@/layouts/ChatLayout/Chat.layout'
+import useChat from '@/queries/useChat'
 import { useSearch } from '@/queries/useSearch'
-import { ApiChatMessage, chatApi } from '@/services/api'
+import { ApiChatMessage } from '@/services/api'
 import { FILE_TYPE } from '@/types/data.types'
 import { filterByType } from '@/utils/filterType.utills'
 import { populateDirs } from '@/utils/populateDirs.util'
@@ -23,10 +24,16 @@ export const HomePage: React.FC<HomePageProps> = ({ className, ...props }) => {
   const [prompt, setPrompt] = useState('')
   const [selectedFiles, setSelectedFiles] = useState<string[]>([])
   const [messages, setMessages] = useState<ApiChatMessage[]>([])
-  const [generating, setGenerating] = useState(false)
 
   const queryParm = useQueryParams()
   const filter = queryParm.getArray(QUERY_PARAMS_KEY.FILE_TYPE) as FILE_TYPE[]
+
+  const chatQuery = useChat({
+    onSuccess(res) {
+      setMessages((value) => [...value, res.message])
+      setPrompt('')
+    },
+  })
 
   const searchQuery = useSearch(
     { query },
@@ -48,8 +55,6 @@ export const HomePage: React.FC<HomePageProps> = ({ className, ...props }) => {
   }
 
   const onPrompt = async (prompt: string) => {
-    setGenerating(true)
-
     setMessages((value) => [
       ...value,
       {
@@ -58,20 +63,14 @@ export const HomePage: React.FC<HomePageProps> = ({ className, ...props }) => {
       },
     ])
 
-    const { message } = await chatApi({
+    chatQuery.mutate({
       prompt,
       files: fileList.filter((f) => selectedFiles.includes(f.id)),
       history: messages,
     })
-
-    setGenerating(false)
-    setMessages((value) => [...value, message])
-    setPrompt('')
   }
 
   const onEditPrompt: OnEditPrompt = async (prompt, messageIndex) => {
-    setGenerating(true)
-
     setMessages((value) => {
       const updatedMessages = value.slice(0, messageIndex)
       updatedMessages.push({
@@ -81,19 +80,11 @@ export const HomePage: React.FC<HomePageProps> = ({ className, ...props }) => {
       return updatedMessages
     })
 
-    const { message } = await chatApi({
+    chatQuery.mutate({
       prompt,
       files: fileList.filter((f) => selectedFiles.includes(f.id)),
       history: messages,
     })
-
-    setGenerating(false)
-    setMessages((value) => {
-      const updatedMessages = value.slice(0, messageIndex + 1)
-      updatedMessages.push(message)
-      return updatedMessages
-    })
-    setPrompt('')
   }
 
   useEffect(() => {
@@ -108,8 +99,8 @@ export const HomePage: React.FC<HomePageProps> = ({ className, ...props }) => {
           prompt={prompt}
           onPromptChange={setPrompt}
           onSubmit={(prompt) => onPrompt(prompt)}
-          loading={generating}
-          disabled={generating}
+          loading={chatQuery.isLoading}
+          disabled={chatQuery.isLoading}
         />
       }
     >
