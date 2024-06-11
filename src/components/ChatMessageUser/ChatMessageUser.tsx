@@ -2,7 +2,7 @@ import { OnEditPrompt } from '@/containers/HomePage'
 import { Button, Textarea } from '@nextui-org/react'
 import clsx from 'clsx'
 import React, { useState } from 'react'
-import { PencilIcon } from '../icons/Pencil'
+import { PencilIcon } from '../icons'
 
 export type ChatMessageUserProps = React.HTMLProps<HTMLDivElement> & {
   message: string

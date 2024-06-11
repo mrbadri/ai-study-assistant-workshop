@@ -264,6 +264,10 @@ const getFileType = (__typename: string, ext: string) => {
       type = FILE_TYPE.VIDEO
       break
 
+    case 'AudioFile':
+      type = FILE_TYPE.AUDIO
+      break
+
     case 'ImageBlock':
       type = FILE_TYPE.IMAGE
       break

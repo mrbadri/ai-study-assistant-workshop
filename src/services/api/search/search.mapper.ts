@@ -13,6 +13,8 @@ const searchMapperResponse = ({
 }: SearchMapperResponseProps) => {
   const files: FileData[] = []
 
+  console.log(results)
+
   try {
     results.data
       .flatMap((res) => res.payload)
@@ -27,6 +29,8 @@ const searchMapperResponse = ({
           autoCaption,
           autoSummary,
           autoTypes,
+          alt,
+          url,
         } = file
 
         const type = apiUtils.getFileType(__typename, ext)
@@ -34,6 +38,8 @@ const searchMapperResponse = ({
         files.push({
           id: _additional.id,
           type,
+          alt,
+          url,
           name: originalName,
           extension: ext,
           excerpt: (type === 'image' ? autoCaption : autoSummary) || '',
@@ -49,6 +55,8 @@ const searchMapperResponse = ({
     console.error('Error searchMapperResponse:', error)
     throw error
   }
+
+  console.log({ files })
 
   return {
     files,

@@ -11,6 +11,8 @@ export type FileData = {
   id: string
   name: string
   type: FILE_TYPE
+  alt?: string
+  url?: string
   excerpt?: string
   tags?: string[]
   path: string[]

@@ -13,6 +13,7 @@ export const getQuerySearch = (query: string) => {
       '__typename',
       'originalName',
       'autoKeywords',
+      'autoSummary',
       'path',
       'ext' as any,
     ),
@@ -20,7 +21,9 @@ export const getQuerySearch = (query: string) => {
       '__typename',
       'originalName',
       'autoKeywords',
+      'autoSummary',
       'path',
+      'url',
       'ext',
     ),
     unbody.get.audioFile.select(
@@ -28,6 +31,7 @@ export const getQuerySearch = (query: string) => {
       'originalName',
       'autoKeywords',
       'path',
+      'url',
       'ext',
     ),
     unbody.get.imageBlock.select(
@@ -36,6 +40,10 @@ export const getQuerySearch = (query: string) => {
       'autoCaption',
       'autoTypes',
       'path',
+      'url',
+      'alt',
+      'width',
+      'height',
       'ext',
     ),
   ]

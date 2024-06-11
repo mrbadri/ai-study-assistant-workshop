@@ -4,6 +4,7 @@ import { Accordion, AccordionItem, Checkbox, Divider } from '@nextui-org/react'
 import { UseQueryResult } from '@tanstack/react-query'
 import clsx from 'clsx'
 import React, { useMemo } from 'react'
+import { AccordionFilePreview } from '../AccordionFilePreview'
 import { ContextPanel } from '../ContextPanel/ContextPanel'
 import { FileCard } from '../FileCard'
 import { FolderCard } from '../FolderCard'
@@ -220,7 +221,9 @@ export const SearchResult: React.FC<SearchResultProps> = ({
                             />
                           </div>
                         }
-                      ></AccordionItem>
+                      >
+                        <AccordionFilePreview file={item} />
+                      </AccordionItem>
                     )
                   })}
                 </Accordion>
