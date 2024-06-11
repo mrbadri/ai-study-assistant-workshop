@@ -1,5 +1,5 @@
 import { QUERY_PARAMS_KEY } from '@/constant/queryParams.constant'
-import useQueryParams from '@/hook/queryParameter/queryParameter.hook'
+import useQueryParams from '@/hook/queryParamets.hook'
 import { FILE_TYPE } from '@/types/data.types'
 import { Chip } from '@nextui-org/react'
 import clsx from 'clsx'
